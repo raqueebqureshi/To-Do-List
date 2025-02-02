@@ -24,7 +24,7 @@ Lottie for animations
 
 * To run the project
 
-git clone <repository-url>
+git clone "https://github.com/raqueebqureshi/To-Do-List.git"
 
 cd <project-directory>
 
