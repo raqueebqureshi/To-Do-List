@@ -26,7 +26,7 @@ Lottie for animations
 
 git clone "https://github.com/raqueebqureshi/To-Do-List.git"
 
-cd <project-directory>
+cd project-directory
 
 flutter pub get
 
