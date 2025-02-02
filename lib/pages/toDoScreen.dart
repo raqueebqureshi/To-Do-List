@@ -99,10 +99,8 @@ class _TodoHomeState extends State<TodoHome> {
   }
 
   void _deleteTask(int index) {
-    // Store the task data before removing it
     final removedTask = _tasks[index];
 
-    // Remove the task from the list
     _listKey.currentState?.removeItem(
       index,
       (context, animation) => _buildRemovedItem(removedTask, animation),
@@ -125,7 +123,6 @@ class _TodoHomeState extends State<TodoHome> {
     );
   }
 
-// Update _buildRemovedItem to accept the task data directly
   Widget _buildRemovedItem(
       Map<String, dynamic> task, Animation<double> animation) {
     return SizeTransition(
@@ -137,7 +134,7 @@ class _TodoHomeState extends State<TodoHome> {
         child: ListTile(
           leading: Checkbox(
             value: task["isDone"],
-            onChanged: null, // Disable the checkbox during removal
+            onChanged: null,
           ),
           title: Text(
             task["title"],
@@ -146,9 +143,9 @@ class _TodoHomeState extends State<TodoHome> {
               decoration: task["isDone"] ? TextDecoration.lineThrough : null,
             ),
           ),
-          trailing: IconButton(
-            icon: const Icon(Icons.delete, color: Colors.redAccent),
-            onPressed: null, // Disable the delete button during removal
+          trailing: const IconButton(
+            icon: Icon(Icons.delete, color: Colors.redAccent),
+            onPressed: null,
           ),
         ),
       ),
