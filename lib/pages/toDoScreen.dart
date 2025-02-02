@@ -2,32 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert'; // For JSON encoding/decoding
-import 'package:lottie/lottie.dart'; // Import Lottie package
+import 'dart:convert';
+import 'package:lottie/lottie.dart';
 
-class TodoScreen extends StatefulWidget {
+class TodoHome extends StatefulWidget {
   @override
-  _TodoScreenState createState() => _TodoScreenState();
+  _TodoHomeState createState() => _TodoHomeState();
 }
 
-class _TodoScreenState extends State<TodoScreen> {
+class _TodoHomeState extends State<TodoHome> {
   final List<Map<String, dynamic>> _tasks = [];
   final TextEditingController _taskController = TextEditingController();
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-  bool _showCelebration = false; // State to control celebration animation
+  bool _showCelebration = false;
 
   @override
   void initState() {
     super.initState();
-    _loadTasks(); // Load tasks when the screen initializes
+    _loadTasks();
   }
 
-  // Load tasks from local storage
   Future<void> _loadTasks() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? tasksJson = prefs.getString('tasks');
-      print("Loaded tasks from storage: $tasksJson"); // Debugging
+      print("Loaded tasks from storage: $tasksJson");
       if (tasksJson != null) {
         List<dynamic> tasks = jsonDecode(tasksJson);
         setState(() {
@@ -35,19 +34,18 @@ class _TodoScreenState extends State<TodoScreen> {
         });
       }
     } catch (e) {
-      print("Error loading tasks: $e"); // Debugging
+      print("Error loading tasks: $e");
     }
   }
 
-  // Save tasks to local storage
   Future<void> _saveTasks() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String tasksJson = jsonEncode(_tasks);
-      print("Saving tasks to storage: $tasksJson"); // Debugging
+      print("Saving tasks to storage: $tasksJson");
       await prefs.setString('tasks', tasksJson);
     } catch (e) {
-      print("Error saving tasks: $e"); // Debugging
+      print("Error saving tasks: $e");
     }
   }
 
@@ -56,10 +54,10 @@ class _TodoScreenState extends State<TodoScreen> {
       setState(() {
         _tasks.insert(0, {"title": _taskController.text, "isDone": false});
         _taskController.clear();
-        _listKey.currentState?.insertItem(0); // Animate the insertion
+        _listKey.currentState?.insertItem(0);
       });
 
-      _saveTasks(); // Save tasks to local storage
+      _saveTasks();
 
       Fluttertoast.showToast(
         msg: "Task added successfully!",
@@ -85,35 +83,37 @@ class _TodoScreenState extends State<TodoScreen> {
     setState(() {
       _tasks[index]["isDone"] = !_tasks[index]["isDone"];
     });
-    _saveTasks(); // Save tasks to local storage
+    _saveTasks();
 
-    // Check if all tasks are done
     if (_tasks.every((task) => task["isDone"])) {
       setState(() {
-        _showCelebration = true; // Show celebration animation
+        _showCelebration = true;
       });
 
-      // Hide the celebration animation after 3 seconds
-      Future.delayed(Duration(milliseconds: 2000), () {
+      Future.delayed(const Duration(milliseconds: 2000), () {
         setState(() {
-          _showCelebration = false; // Hide celebration animation
+          _showCelebration = false;
         });
       });
     }
   }
 
   void _deleteTask(int index) {
+    // Store the task data before removing it
+    final removedTask = _tasks[index];
+
+    // Remove the task from the list
     _listKey.currentState?.removeItem(
       index,
-      (context, animation) => _buildRemovedItem(index, animation),
-      duration: Duration(milliseconds: 300),
+      (context, animation) => _buildRemovedItem(removedTask, animation),
+      duration: const Duration(milliseconds: 300),
     );
 
     setState(() {
       _tasks.removeAt(index);
     });
 
-    _saveTasks(); // Save tasks to local storage
+    _saveTasks();
 
     Fluttertoast.showToast(
       msg: "Task deleted!",
@@ -125,30 +125,30 @@ class _TodoScreenState extends State<TodoScreen> {
     );
   }
 
-  // Build a removed item for animation
-  Widget _buildRemovedItem(int index, Animation<double> animation) {
+// Update _buildRemovedItem to accept the task data directly
+  Widget _buildRemovedItem(
+      Map<String, dynamic> task, Animation<double> animation) {
     return SizeTransition(
       sizeFactor: animation,
       child: Card(
-        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 4,
         child: ListTile(
           leading: Checkbox(
-            value: _tasks[index]["isDone"],
-            onChanged: (value) => _toggleTask(index),
+            value: task["isDone"],
+            onChanged: null, // Disable the checkbox during removal
           ),
           title: Text(
-            _tasks[index]["title"],
+            task["title"],
             style: GoogleFonts.poppins(
               fontSize: 16,
-              decoration:
-                  _tasks[index]["isDone"] ? TextDecoration.lineThrough : null,
+              decoration: task["isDone"] ? TextDecoration.lineThrough : null,
             ),
           ),
           trailing: IconButton(
-            icon: Icon(Icons.delete, color: Colors.redAccent),
-            onPressed: () => _deleteTask(index),
+            icon: const Icon(Icons.delete, color: Colors.redAccent),
+            onPressed: null, // Disable the delete button during removal
           ),
         ),
       ),
@@ -164,17 +164,16 @@ class _TodoScreenState extends State<TodoScreen> {
             style: GoogleFonts.poppins(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
-                textStyle: TextStyle(color: Colors.white))),
+                textStyle: const TextStyle(color: Colors.white))),
         backgroundColor: Colors.blueAccent,
         elevation: 4,
       ),
       body: Stack(
-        // Use Stack to overlay the animation
         children: [
           Column(
             children: [
               Padding(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -187,7 +186,7 @@ class _TodoScreenState extends State<TodoScreen> {
                     ],
                   ),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Row(
                       children: [
                         Expanded(
@@ -203,7 +202,7 @@ class _TodoScreenState extends State<TodoScreen> {
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.add_circle,
+                          icon: const Icon(Icons.add_circle,
                               color: Colors.blueAccent, size: 32),
                           onPressed: _addTask,
                         ),
@@ -227,14 +226,14 @@ class _TodoScreenState extends State<TodoScreen> {
                         itemBuilder: (context, index, animation) {
                           return SlideTransition(
                             position: Tween<Offset>(
-                              begin: Offset(-1, 0),
+                              begin: const Offset(-1, 0),
                               end: Offset.zero,
                             ).animate(CurvedAnimation(
                               parent: animation,
                               curve: Curves.easeInOut,
                             )),
                             child: Card(
-                              margin: EdgeInsets.symmetric(
+                              margin: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 6),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
@@ -256,7 +255,7 @@ class _TodoScreenState extends State<TodoScreen> {
                                   ),
                                 ),
                                 trailing: IconButton(
-                                  icon: Icon(Icons.delete_forever,
+                                  icon: const Icon(Icons.delete_forever,
                                       color: Colors.redAccent),
                                   onPressed: () => _deleteTask(index),
                                 ),
@@ -268,24 +267,22 @@ class _TodoScreenState extends State<TodoScreen> {
               ),
             ],
           ),
-          // Celebration Animation
           if (_showCelebration)
             Positioned.fill(
-              // Fill the entire screen
               child: Container(
-                color: Colors.white54, // Optional: semi-transparent background
+                color: Colors.white54,
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Lottie.asset(
-                        'assets/celebration.json', // Add your Lottie file here
+                        'assets/celebration.json',
                         width: 200,
                         height: 200,
                         repeat: false,
                         fit: BoxFit.cover,
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       Text(
                         "All tasks completed!",
                         style: GoogleFonts.poppins(
